@@ -154,6 +154,7 @@ fn cancel_deposit(
     reason: felt252,
     reason_bytes: Array<felt252>
 ) {
+    assert((starknet_utils::sn_gasleft(array![]) / 63) > starting_gas, 'cancel_deposit: u128 overflow');
     starting_gas -= (starknet_utils::sn_gasleft(array![]) / 63);
 
     // get deposit info from data_store

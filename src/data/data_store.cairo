@@ -580,6 +580,7 @@ mod DataStore {
             let current_value = self.felt252_values.read(key);
             // Add the delta to the current value.
             // TODO: Check for overflow.
+            // assert()
             let new_value = current_value + value;
             // Set the new value.
             self.felt252_values.write(key, new_value);
@@ -592,6 +593,8 @@ mod DataStore {
             self.role_store.read().assert_only_role(get_caller_address(), role::CONTROLLER);
             // Get the current value.
             let current_value = self.felt252_values.read(key);
+            // Checking for overflow.
+            assert(value > current_value, 'decrement_felt252: felt252 overflow');
             // Subtract the delta from the current value.
             let new_value = current_value - value;
             // Set the new value.
