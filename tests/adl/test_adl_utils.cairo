@@ -15,7 +15,7 @@ use satoru::tests_lib::{setup, setup_event_emitter, setup_oracle_and_store, tear
 use satoru::position::position::{Position};
 
 use snforge_std::{
-    declare, start_prank, stop_prank, ContractClassTrait, spy_events, SpyOn, EventSpy, EventFetcher,
+    declare, start_prank, CheatTarget, stop_prank, ContractClassTrait, spy_events, SpyOn, EventSpy, EventFetcher,
     event_name_hash, Event, EventAssertions, start_mock_call
 };
 use satoru::adl::adl_utils;
@@ -149,7 +149,7 @@ fn given_normal_conditions_when_emit_adl_state_updated_then_works() {
     let should_enable_adl: bool = true;
 
     // Emit event
-    start_prank(event_emitter_address, caller_address);
+    start_prank(CheatTarget::One(event_emitter_address), caller_address);
     adl_utils::emit_adl_state_updated(
         event_emitter, market, is_long, pnl_to_pool_factor, max_pnl_factor, should_enable_adl
     );
@@ -265,7 +265,7 @@ fn given_normal_conditions_when_update_adl_state_then_works() {
         short_token: short_token_address,
     };
 
-    start_prank(role_store.contract_address, caller_address);
+    start_prank(CheatTarget::One(role_store.contract_address), caller_address);
     role_store.grant_role(caller_address, role::MARKET_KEEPER);
 
     let price = Price { min: 1, max: 200 };

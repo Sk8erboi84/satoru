@@ -131,12 +131,12 @@ fn setup() -> (
     let swap_handler_address = deploy_swap_handler_address(role_store_address, data_store_address);
     let swap_handler = ISwapHandlerDispatcher { contract_address: swap_handler_address };
 
-    start_prank(role_store_address, caller_address);
-    start_prank(data_store_address, caller_address);
-    start_prank(event_emitter_address, caller_address);
-    start_prank(oracle_address, caller_address);
-    start_prank(bank_address, caller_address);
-    start_prank(swap_handler_address, caller_address);
+    start_prank(CheatTarget::One(role_store_address), caller_address);
+    start_prank(CheatTarget::One(data_store_address), caller_address);
+    start_prank(CheatTarget::One(event_emitter_address), caller_address);
+    start_prank(CheatTarget::One(oracle_address), caller_address);
+    start_prank(CheatTarget::One(bank_address), caller_address);
+    start_prank(CheatTarget::One(swap_handler_address), caller_address);
 
     // Grant the caller the `CONTROLLER` role.
     role_store.grant_role(caller_address, role::CONTROLLER);

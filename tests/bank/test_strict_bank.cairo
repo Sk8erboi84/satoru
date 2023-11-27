@@ -8,7 +8,7 @@ use result::ResultTrait;
 use traits::{TryInto, Into};
 use starknet::{ContractAddress, get_caller_address, contract_address_const, ClassHash,};
 use integer::u256_from_felt252;
-use snforge_std::{declare, start_prank, stop_prank, ContractClassTrait, ContractClass};
+use snforge_std::{declare, start_prank, CheatTarget, stop_prank, ContractClassTrait, ContractClass};
 
 // Local imports.
 use satoru::bank::bank::{IBankDispatcherTrait, IBankDispatcher};
@@ -60,7 +60,7 @@ fn setup_contracts() -> (
     // start prank and give controller role to caller_address
     let caller_address: ContractAddress = contract_address_const::<'caller'>();
     let receiver_address: ContractAddress = 0x202.try_into().unwrap();
-    start_prank(role_store_address, caller_address);
+    start_prank(CheatTarget::One(role_store_address), caller_address);
     role_store.grant_role(caller_address, role::CONTROLLER);
     (caller_address, receiver_address, role_store, data_store, bank, strict_bank)
 }
@@ -75,7 +75,7 @@ fn deploy_bank(
     let mut constructor_calldata = array![];
     constructor_calldata.append(data_store_address.into());
     constructor_calldata.append(role_store_address.into());
-    start_prank(data_store_address, caller_address);
+    start_prank(CheatTarget::One(data_store_address), caller_address);
     contract.deploy_at(@constructor_calldata, bank_address).unwrap()
 }
 
@@ -89,7 +89,7 @@ fn deploy_strict_bank(
     let mut constructor_calldata = array![];
     constructor_calldata.append(data_store_address.into());
     constructor_calldata.append(role_store_address.into());
-    start_prank(strict_bank_address, caller_address);
+    start_prank(CheatTarget::One(strict_bank_address), caller_address);
     contract.deploy_at(@constructor_calldata, strict_bank_address).unwrap()
 }
 
@@ -100,7 +100,7 @@ fn deploy_data_store(role_store_address: ContractAddress) -> ContractAddress {
     let contract = declare('DataStore');
     let mut constructor_calldata = array![];
     constructor_calldata.append(role_store_address.into());
-    start_prank(data_store_address, caller_address);
+    start_prank(CheatTarget::One(data_store_address), caller_address);
     contract.deploy_at(@constructor_calldata, data_store_address).unwrap()
 }
 
@@ -112,7 +112,7 @@ fn deploy_role_store() -> ContractAddress {
     let role_store_address: ContractAddress = contract_address_const::<'role_store'>();
 
     let constructor_arguments: @Array::<felt252> = @ArrayTrait::new();
-    start_prank(role_store_address, caller_address);
+    start_prank(CheatTarget::One(role_store_address), caller_address);
     contract.deploy_at(constructor_arguments, role_store_address).unwrap()
 }
 
@@ -180,7 +180,7 @@ fn given_caller_has_no_controller_role_when_transfer_out_then_fails() {
 
     // stop prank as caller_address and start prank as receiver_address who has no controller role
     stop_prank(strict_bank.contract_address);
-    start_prank(strict_bank.contract_address, receiver_address);
+    start_prank(CheatTarget::One(strict_bank.contract_address), receiver_address);
     // call the transfer_out function
     strict_bank.transfer_out(erc20_contract_address, caller_address, 100);
     // teardown
@@ -222,7 +222,7 @@ fn given_normal_conditions_when_record_transfer_in_works() {
     let erc20_contract_address = erc20_contract.deploy(@constructor_calldata3).unwrap();
     let erc20_dispatcher = IERC20Dispatcher { contract_address: erc20_contract_address };
 
-    start_prank(erc20_contract_address, caller_address);
+    start_prank(CheatTarget::One(erc20_contract_address), caller_address);
 
     // send tokens into strict bank 
     erc20_dispatcher.transfer(strict_bank.contract_address, u256_from_felt252(50));
@@ -261,7 +261,7 @@ fn given_caller_has_no_controller_role_when_record_transfer_in_then_fails() {
 
     // stop prank as caller_address and start prank as receiver_address who has no controller role
     stop_prank(strict_bank.contract_address);
-    start_prank(strict_bank.contract_address, receiver_address);
+    start_prank(CheatTarget::One(strict_bank.contract_address), receiver_address);
     // call the transfer_out function with receiver address 
     strict_bank.record_transfer_in(erc20_contract_address);
     // teardown
@@ -283,7 +283,7 @@ fn given_normal_conditions_when_sync_token_balance_passes() {
     let erc20_contract_address = erc20_contract.deploy(@constructor_calldata3).unwrap();
     let erc20_dispatcher = IERC20Dispatcher { contract_address: erc20_contract_address };
 
-    start_prank(erc20_contract_address, caller_address);
+    start_prank(CheatTarget::One(erc20_contract_address), caller_address);
 
     // send tokens into strict bank 
     erc20_dispatcher.transfer(strict_bank.contract_address, u256_from_felt252(50));
@@ -310,14 +310,14 @@ fn given_caller_has_no_controller_role_when_sync_token_balance_then_fails() {
     let erc20_contract_address = erc20_contract.deploy(@constructor_calldata3).unwrap();
     let erc20_dispatcher = IERC20Dispatcher { contract_address: erc20_contract_address };
 
-    start_prank(erc20_contract_address, caller_address);
+    start_prank(CheatTarget::One(erc20_contract_address), caller_address);
 
     // send tokens into strict bank 
     erc20_dispatcher.transfer(strict_bank.contract_address, u256_from_felt252(50));
 
     // stop prank as caller_address and start prank as receiver_address who has no controller role
     stop_prank(strict_bank.contract_address);
-    start_prank(strict_bank.contract_address, receiver_address);
+    start_prank(CheatTarget::One(strict_bank.contract_address), receiver_address);
     // call the sync_token_balance function with receiver address 
     strict_bank.sync_token_balance(erc20_contract_address);
     // teardown

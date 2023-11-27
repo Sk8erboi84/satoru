@@ -404,7 +404,7 @@ fn given_normal_conditions_when_increment_claimable_collateral_amount_then_works
     // Setup pre conditions.
 
     // Mock the timestamp.
-    start_warp(chain.contract_address, current_timestamp);
+    start_warp(CheatTarget::One(chain.contract_address), current_timestamp);
 
     // Fill required data store keys.
     data_store.set_u128(keys::claimable_collateral_time_divisor(), 1);

@@ -1,6 +1,7 @@
 // Core lib imports.
 use starknet::{ContractAddress, Felt252TryIntoContractAddress, contract_address_const};
 use snforge_std::{declare, start_prank, stop_prank, ContractClass, ContractClassTrait};
+use snforge_std::{CheatTarget};
 use debug::PrintTrait;
 // Local imports.
 use satoru::data::data_store::{IDataStoreDispatcher, IDataStoreDispatcherTrait};
@@ -22,7 +23,7 @@ use satoru::role::role;
 /// * `ContractAddress` - The pre-calculated address of the deployed contract
 fn deploy_mock_contract(contract: ContractClass, calldata: @Array<felt252>) -> ContractAddress {
     let future_deployed_address = contract.precalculate_address(calldata);
-    start_prank(future_deployed_address, contract_address_const::<'caller'>());
+    start_prank(CheatTarget::One(future_deployed_address), contract_address_const::<'caller'>());
     contract.deploy_at(calldata, future_deployed_address).unwrap()
 }
 
@@ -80,7 +81,7 @@ fn deploy_oracle_store(
 ) -> ContractAddress {
     let contract = declare('OracleStore');
     let oracle_address = contract_address_const::<'oracle_store'>();
-    start_prank(role_store_address, contract_address_const::<'caller'>());
+    start_prank(CheatTarget::One(role_store_address), contract_address_const::<'caller'>());
     let constructor_calldata = array![role_store_address.into(), event_emitter_address.into()];
     deploy_mock_contract(contract, @constructor_calldata)
 }
@@ -112,9 +113,9 @@ fn setup() -> (ContractAddress, IRoleStoreDispatcher, IDataStoreDispatcher) {
     let role_store = IRoleStoreDispatcher { contract_address: role_store_address };
     let data_store_address = deploy_data_store(role_store_address);
     let data_store = IDataStoreDispatcher { contract_address: data_store_address };
-    start_prank(role_store_address, caller_address);
+    start_prank(CheatTarget::One(role_store_address), caller_address);
     role_store.grant_role(caller_address, role::CONTROLLER);
-    start_prank(data_store_address, caller_address);
+    start_prank(CheatTarget::One(data_store_address), caller_address);
     (caller_address, role_store, data_store)
 }
 
@@ -151,9 +152,9 @@ fn setup_oracle_and_store() -> (
     let role_store = IRoleStoreDispatcher { contract_address: role_store_address };
     let data_store_address = deploy_data_store(role_store_address);
     let data_store = IDataStoreDispatcher { contract_address: data_store_address };
-    start_prank(role_store_address, caller_address);
+    start_prank(CheatTarget::One(role_store_address), caller_address);
     role_store.grant_role(caller_address, role::CONTROLLER);
-    start_prank(data_store_address, caller_address);
+    start_prank(CheatTarget::One(data_store_address), caller_address);
     let (event_emitter_address, event_emitter) = setup_event_emitter();
     let oracle_store_address = deploy_oracle_store(role_store_address, event_emitter_address);
     let oracle_address = deploy_oracle(
